@@ -17,6 +17,8 @@ function p=s2p(s)
 
 % 1/30/2003: PJS  Initial Coding
 % 11/23/2010 PJS  Updated for matrix polynomials and to use sym/eval
+% 5/5/2021   TC   Use symvar instead of findsym 
+%                 (removed long since, thanks to Huang Hejun for pointing out!)
 
 if ~isa(s,'sym')
     error('Input must be a symbolic toolbox object');
@@ -26,15 +28,10 @@ end
 s = vpa(s);
 
 % Create pvars for each variable in s
-vars = findsym(s);
-if isempty(vars)
-    nv = 0;
-else
-    vidx = [0 strfind(vars,',') length(vars)+1];
-    nv = length(vidx)-1;
-end
-for i1 =1:nv
-    varname = vars(vidx(i1)+1 : vidx(i1+1)-1);
+vars = symvar(s);
+
+for i1 =1:length(vars)
+    varname = char(vars(i1));
     pvar(varname);
 end
 
