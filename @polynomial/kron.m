@@ -1,4 +1,4 @@
-function b = kron(x,y)
+function c = kron(a,b)
 % function B = kron(X,Y)
 %
 % DESCRIPTION
@@ -24,25 +24,33 @@ if nargin~=2
     %narginchk(2,2);
 end
 
+a = polynomial(a);
+b = polynomial(b);
+
 % Get matrix dimensions
-[rx,cx] = size(x);
-[ry,cy] = size(y);
+sza = size(a);
+szb = size(b);
 
-% Inialize variable for parentheses subsref
-L.type = '()';
-L.subs = {};
+% Get polynomial info
+acoef = a.coefficient;  bcoef = b.coefficient;
+adeg  = a.degmat;       bdeg  = b.degmat;
 
-% Perform KRON operation 
-% Note: This is probably not the most efficient implementation for polys
-b = polynomial( zeros(rx*ry,cx*cy) );
-for i = 1:rx
-    for j = 1:cx
-        L.subs = {i,j};
-        xij = subsref(x,L);
-        
-        ridx = (1:ry)+(i-1)*ry;
-        cidx = (1:cy)+(j-1)*cy;
-        L.subs = {ridx,cidx};
-        b = subsasgn(b,L,xij*y);
-    end
+% number of terms & elements
+[ant,ane] = size(acoef);
+[bnt,bne] = size(bcoef);
+
+% variables of x and y
+[Ia,Ib] = ndgrid(1:ant,1:bnt);
+ja = reshape(kron(reshape(1:ane,sza),ones(szb)),[],1);
+jb = reshape(kron(ones(sza),reshape(1:bne,szb)),[],1);
+
+matdim = sza.*szb;
+degmat = [adeg(Ia(:),:) bdeg(Ib(:),:)];
+coefficient = acoef(Ia(:),ja(:)).*bcoef(Ib(:),jb(:));
+
+[degmat,vars] = PVuniquevar(degmat,[a.varname b.varname]);
+[coefficient,degmat] = PVuniqueterm(coefficient,degmat,matdim);
+
+c = polynomial(coefficient,degmat,vars,matdim);
+
 end
